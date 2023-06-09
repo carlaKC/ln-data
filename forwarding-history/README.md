@@ -1,6 +1,6 @@
 ## Forwarding History
 
-These instructions export and pseudonymize the forwarding history of a 
+These instructions export and randomizes the forwarding history of a 
 lightning node. The final product is `forwarding_events.csv` which 
 contains the timestamp, amount, fee and obfuscated incoming/outgoing 
 channel for HTLCs forwarded by the node.
@@ -11,7 +11,7 @@ parameter that is provided in the instructions below.
 
 There are two phases in this data collection: 
 1. Collection of forwarding events from node in a CSV
-2. Pseudonymization of data to remove sensitive information
+2. Randomization of data to remove sensitive information
 
 Responses are parsed using [jq](https://jqlang.github.io/jq/) - please 
 open an issue if this requirement is not possible in your production 
@@ -25,7 +25,7 @@ Ensure that all scripts are executable:
 ```
 chmod +x lnd-data.sh
 chmod +x lnd-forwarding-history.sh
-chmod +x pseudonymize-data.sh
+chmod +x randomize-data.sh
 ```
 
 Run `lnd-data.sh` with the following arguments: 
