@@ -1,8 +1,8 @@
 ## Forwarding History
 
 These instructions export and randomizes the forwarding history of a 
-lightning node. The final product is `forwarding_events.csv` which 
-contains the timestamp, amount, fee and obfuscated incoming/outgoing 
+lightning node. The final product is `forwarding_data.csv` which 
+contains the timestamp, amount, fee and randomized incoming/outgoing 
 channel for HTLCs forwarded by the node.
 
 By default, this script will collect data from 1 January 2023. If you
