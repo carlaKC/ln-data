@@ -38,3 +38,14 @@ optional sleep parameter. This will instruct the data collection to
 back off for 1 second in between reads. This will give other node 
 operations ample time to access the database, and limit the database 
 load.
+
+### Other Implementations
+If you are running another lightning implementation, you can still use
+randomize-data.sh to process data from another implementation. 
+
+You will need to produce a CSV file with the following structure, and 
+values are expected to be contained in ""s: 
+`timestamp_ns chan_id_in chan_id_out amt_in_msat amt_out_msat fee_msat`
+
+To randomize the incoming and outgoing channels IDs, run: 
+`randomize-data.sh [csv file]`
