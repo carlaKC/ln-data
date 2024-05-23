@@ -27,8 +27,8 @@ Run the script:
 The data will be exported in `fowarding_data.csv`, with timestamps and 
 channel ids randomized to protect the privacy of the collecting node.
 
-### ADDENDUM for a very large database with >1M entries
-In case the pull request via circuitbreaker API does not work because of very large database, 
+### ADDENDUM for processing very large circuitbreaker database with >1M entries
+In case the pull request via circuitbreaker API does not work because of too many entries, 
 copy the database of circuitbreaker to the directory channel-utilization.
 
 Example of copy command dependent where circuitbreaker.db and the directory channel-utilization is located:
