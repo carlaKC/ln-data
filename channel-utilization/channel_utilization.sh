@@ -14,11 +14,12 @@ if [ $? -ne 0 ]; then
 fi
 
 # Create CSV header
-echo "timestamp_ns, chan_id_in, chan_id_out, amt_in_msat, amt_out_msat, fee_msat" > "$output_file"
+echo "add_time_ns, resolve_time_ns, chan_id_in, chan_id_out, amt_in_msat, amt_out_msat, fee_msat" > "$output_file"
 
 echo "$json_data" | jq -r '
   .forwards[] | [
     .addTimeNs,
+	.resolveTimeNs,
     .incomingCircuit.shortChannelId,
     .outgoingCircuit.shortChannelId,
     .incomingAmount,
@@ -34,7 +35,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Temporary CSV file created successfully: $output_file, randomizing data"
-../forwarding-history/randomize-data.sh "$output_file"
+./randomize-data.sh "$output_file"
 
 rm "$output_file"
 echo "Randomized forwarding history, final data available in forwarding_data.csv"
