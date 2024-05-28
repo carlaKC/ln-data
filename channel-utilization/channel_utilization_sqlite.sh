@@ -57,7 +57,7 @@ while true; do
 done
 
 echo "Temporary CSV file created successfully: $output_file, now pseudo-randomizing channel_ids"
-./randomize-data-fast.sh "$output_file"
+bash randomize-data-fast.sh "$output_file"
 
 #rm "$output_file"
 echo "Channel IDs of forwarding history now randomized, final data available in forwarding_data.csv"

@@ -35,20 +35,22 @@ In case the pull request via the circuitbreaker API does not work because of too
 
    Example of a copy command depending on where `circuitbreaker.db` and the `channel-utilization` directory are located:
    ```sh
-   cp /home/circuitbreaker/.circuitbreaker/circuitbreaker.db /home/admin/ln-data/channel-utilization/.
+   cp /path/to/circuitbreaker.db /path/to/channel-utilization/.
    ```
+   On MacOS you find circuitbreaker.db in
+   `~/Library/Application\ Support/Circuitbreaker/circuitbreaker.db`
 
-2. Count the number of stored entries for information purposes:
+3. Count the number of stored entries for information purposes:
    ```sh
    sqlite3 circuitbreaker.db "SELECT count(*) FROM forwarding_history;"
    ```
    
-3. Check the integrity of the circuitbreaker database:
+4. Check the integrity of the circuitbreaker database:
    ```sh
    sqlite3 circuitbreaker.db "PRAGMA integrity_check;"
    ```
    
-4. Run the alternative extraction script:
+5. Run the alternative extraction script:
    ```sh
    bash channel_utilization_sqlite.sh
    ```
