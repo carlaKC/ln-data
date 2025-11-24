@@ -85,7 +85,7 @@ def main():
     parser.add_argument("--input-csv-file", default=INPUT_CSV_FILE, help="Input CSV file with forwarding events (default: forwarding_data.csv)")
     args = parser.parse_args()
 
-    now_dt = dt.datetime.utcnow()
+    now_dt = dt.datetime.now(dt.UTC)
     end_ts = int(now_dt.timestamp())
     start_dt = now_dt - dt.timedelta(days=30 * LOOKBACK_MONTHS)
     start_ts = int(start_dt.timestamp())
