@@ -8,4 +8,3 @@ intended for use in production.
 
 Scripts available are: 
 - [LND forwarding history](forwarding-history/README.md)
-- [Circuitbreaker utilization](channel-utilization/README.md)
