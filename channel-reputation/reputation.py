@@ -1,6 +1,7 @@
 import time
 import csv
 import datetime as dt
+import os
 from collections import defaultdict
 import argparse
 
@@ -73,35 +74,28 @@ def read_forwards_from_csv(input_csv_file: str):
     return forwards
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Calculate channel reputation and revenue from LND forwards.")
-    parser.add_argument("--csv-file", default=None, help="Output CSV file name (default: auto-generated based on window parameters)")
-    parser.add_argument("--input-csv-file", default=INPUT_CSV_FILE, help="Input CSV file with forwarding events (default: forwarding_data.csv)")
-    parser.add_argument("--revenue-window-secs", type=int, default=REVENUE_WINDOW_SECS, help=f"Revenue window in seconds (default: {REVENUE_WINDOW_SECS}, which is 2 weeks)")
-    parser.add_argument("--reputation-multiplier", type=int, default=REPUTATION_MULTIPLIER, help=f"Reputation multiplier (default: {REPUTATION_MULTIPLIER})")
-    args = parser.parse_args()
-
-    revenue_window_secs = args.revenue_window_secs
-    reputation_multiplier = args.reputation_multiplier
-
-    # Calculate windows in days
-    revenue_window_days = revenue_window_secs / (24 * 60 * 60)
-    reputation_window_days = (revenue_window_secs * reputation_multiplier) / (24 * 60 * 60)
-
-    # Generate output filename if not specified
-    if args.csv_file is None:
-        output_file = f"channel_scores_{revenue_window_days:.0f}days_{reputation_window_days:.0f}days.csv"
-    else:
-        output_file = args.csv_file
-
-    now_dt = dt.datetime.now(dt.UTC)
+def calculate_and_write_scores(input_csv_file: str, output_file: str, revenue_window_secs: int, reputation_multiplier: int, append_mode: bool = False):
+    """Calculate channel reputation and revenue scores and write to CSV.
+    
+    Args:
+        input_csv_file: Path to input CSV with forwarding events
+        output_file: Path to output CSV file
+        revenue_window_secs: Revenue window in seconds
+        reputation_multiplier: Reputation multiplier
+        append_mode: If True, append to file; if False, overwrite file
+    """
+    try:
+        now_dt = dt.datetime.now(dt.timezone.utc)
+    except AttributeError:
+        # Fallback for Python < 3.2
+        now_dt = dt.datetime.utcnow().replace(tzinfo=dt.timezone.utc)
     # Calculate lookback period from revenue window and multiplier
     lookback_secs = revenue_window_secs * reputation_multiplier
     start_dt = now_dt - dt.timedelta(seconds=lookback_secs)
     start_ts = int(start_dt.timestamp())
 
-    print(f"Reading forwards from {args.input_csv_file}...")
-    forwards = read_forwards_from_csv(args.input_csv_file)
+    print(f"Reading forwards from {input_csv_file}...")
+    forwards = read_forwards_from_csv(input_csv_file)
     print(f"Fetched {len(forwards)} forwards.")
 
     channels = defaultdict(lambda: {
@@ -127,19 +121,84 @@ def main():
     sorted_channel_ids = sorted(channels.keys())
     channel_id_mapping = {cid: idx + 1 for idx, cid in enumerate(sorted_channel_ids)}
 
-    with open(output_file, "w", newline="") as f:
+    # Determine file mode and whether to write header
+    file_mode = "a" if append_mode else "w"
+    write_header = not append_mode or not os.path.exists(output_file)
+    
+    # Get current timestamp for this snapshot
+    now_ts = time.time()
+    try:
+        timestamp_str = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    except AttributeError:
+        # Fallback for Python < 3.2
+        timestamp_str = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+    with open(output_file, file_mode, newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["channel_id", "reputation", "revenue"])
-        now_ts = time.time()
+        if write_header:
+            writer.writerow(["timestamp", "channel_id", "reputation", "revenue"])
         # Write in sorted order by mapped ID
         for cid in sorted_channel_ids:
             data = channels[cid]
             mapped_id = channel_id_mapping[cid]
             rep = int(round(data["reputation"].value_at(now_ts)))
             rev = int(round(data["revenue"].value_at(now_ts)))
-            writer.writerow([mapped_id, rep, rev])
+            writer.writerow([timestamp_str, mapped_id, rep, rev])
 
-    print(f"Wrote {len(channels)} channels to {output_file}")
+    print(f"Wrote {len(channels)} channels to {output_file} at {timestamp_str}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Calculate channel reputation and revenue from LND forwards.")
+    parser.add_argument("--csv-file", default=None, help="Output CSV file name (default: auto-generated based on window parameters)")
+    parser.add_argument("--input-csv-file", default=INPUT_CSV_FILE, help="Input CSV file with forwarding events (default: forwarding_data.csv)")
+    parser.add_argument("--revenue-window-secs", type=int, default=REVENUE_WINDOW_SECS, help=f"Revenue window in seconds (default: {REVENUE_WINDOW_SECS}, which is 2 weeks)")
+    parser.add_argument("--reputation-multiplier", type=int, default=REPUTATION_MULTIPLIER, help=f"Reputation multiplier (default: {REPUTATION_MULTIPLIER})")
+    parser.add_argument("--interval", type=int, default=None, help="Run periodically with this interval in seconds (e.g., 3600 for hourly, 86400 for daily)")
+    args = parser.parse_args()
+
+    revenue_window_secs = args.revenue_window_secs
+    reputation_multiplier = args.reputation_multiplier
+
+    # Calculate windows in days
+    revenue_window_days = revenue_window_secs / (24 * 60 * 60)
+    reputation_window_days = (revenue_window_secs * reputation_multiplier) / (24 * 60 * 60)
+
+    # Generate output filename if not specified
+    if args.csv_file is None:
+        output_file = f"channel_scores_{revenue_window_days:.0f}days_{reputation_window_days:.0f}days.csv"
+    else:
+        output_file = args.csv_file
+
+    # Determine if we're in periodic mode
+    append_mode = args.interval is not None
+
+    if args.interval is not None:
+        # Periodic execution mode
+        print(f"Running in periodic mode with interval of {args.interval} seconds")
+        print(f"Press Ctrl+C to stop")
+        try:
+            while True:
+                calculate_and_write_scores(
+                    args.input_csv_file,
+                    output_file,
+                    revenue_window_secs,
+                    reputation_multiplier,
+                    append_mode=True
+                )
+                print(f"Sleeping for {args.interval} seconds...")
+                time.sleep(args.interval)
+        except KeyboardInterrupt:
+            print("\nStopped by user")
+    else:
+        # Single run mode (backward compatible)
+        calculate_and_write_scores(
+            args.input_csv_file,
+            output_file,
+            revenue_window_secs,
+            reputation_multiplier,
+            append_mode=False
+        )
 
 
 if __name__ == "__main__":
