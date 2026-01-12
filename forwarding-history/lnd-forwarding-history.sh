@@ -39,7 +39,7 @@ fi
 
 # Set default start_time if not provided
 if [ $# -lt 5 ]; then
-    start_time=1672531200
+    start_time=1704067200
 else
     start_time=$5
 fi
