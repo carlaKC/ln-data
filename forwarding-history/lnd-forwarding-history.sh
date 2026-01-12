@@ -39,14 +39,14 @@ fi
 
 # Set default start_time if not provided
 if [ $# -lt 5 ]; then
-    start_time=1672531200
+    start_time=1704067200
 else
     start_time=$5
 fi
 
 # Set initial values for pagination
 index_offset=0
-max_events=10000
+max_events=50000
 total_events=0
 
 # CSV file name
