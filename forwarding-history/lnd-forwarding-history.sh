@@ -46,7 +46,7 @@ fi
 
 # Set initial values for pagination
 index_offset=0
-max_events=10000
+max_events=50000
 total_events=0
 
 # CSV file name
