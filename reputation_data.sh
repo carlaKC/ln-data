@@ -84,13 +84,13 @@ echo "Step 4/5: Computing channel reputation scores..."
 cd channel-reputation
 
 # 2 weeks revenue window, 12 multiplier
-$PYTHON_CMD reputation.py --input-csv-file ../forwarding-history/forwarding_events.csv --revenue-window-secs 1209600 --reputation-multiplier 12
+$PYTHON_CMD reputation.py --input-csv-file ../forwarding-history/forwarding_events.csv --revenue-window-secs 1209600 --reputation-multiplier 12 --single-run
 
 # 4 weeks revenue window, 12 multiplier
-$PYTHON_CMD reputation.py --input-csv-file ../forwarding-history/forwarding_events.csv --revenue-window-secs 2419200 --reputation-multiplier 12
+$PYTHON_CMD reputation.py --input-csv-file ../forwarding-history/forwarding_events.csv --revenue-window-secs 2419200 --reputation-multiplier 12 --single-run
 
 # 2 weeks revenue window, 24 multiplier
-$PYTHON_CMD reputation.py --input-csv-file ../forwarding-history/forwarding_events.csv --revenue-window-secs 1209600 --reputation-multiplier 24
+$PYTHON_CMD reputation.py --input-csv-file ../forwarding-history/forwarding_events.csv --revenue-window-secs 1209600 --reputation-multiplier 24 --single-run
 
 # Move all generated files to results directory
 mv channel_scores_*days_*days.csv ../results/ 2>/dev/null || true

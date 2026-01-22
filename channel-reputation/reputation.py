@@ -289,14 +289,14 @@ def main():
     parser.add_argument("--revenue-window-secs", type=int, default=REVENUE_WINDOW_SECS, help=f"Revenue window in seconds (default: {REVENUE_WINDOW_SECS}, which is 2 weeks)")
     parser.add_argument("--reputation-multiplier", type=int, default=REPUTATION_MULTIPLIER, help=f"Reputation multiplier (default: {REPUTATION_MULTIPLIER})")
     parser.add_argument("--interval", type=int, default=None, help="Run periodically with this interval in seconds (e.g., 3600 for hourly, 86400 for daily)")
-    parser.add_argument("--historical-intervals", action="store_true", help="Calculate scores at regular intervals throughout historical data")
+    parser.add_argument("--single-run", action="store_true", help="Run a single calculation (backward compatible mode, default: historical intervals)")
     parser.add_argument("--interval-hours", type=float, default=6.0, help="Interval duration in hours for historical analysis (default: 6.0 hours)")
     parser.add_argument("--max-intervals", type=int, default=None, help="Maximum number of intervals to process (for testing, default: process all)")
     args = parser.parse_args()
     
     # Validate mutually exclusive flags
-    if args.interval is not None and args.historical_intervals:
-        parser.error("--interval and --historical-intervals cannot be used together")
+    if args.interval is not None and args.single_run:
+        parser.error("--interval and --single-run cannot be used together")
 
     revenue_window_secs = args.revenue_window_secs
     reputation_multiplier = args.reputation_multiplier
@@ -312,15 +312,14 @@ def main():
         output_file = args.csv_file
 
     # Determine execution mode
-    if args.historical_intervals:
-        # Historical interval analysis mode
-        run_historical_analysis(
+    if args.single_run:
+        # Single run mode (backward compatible)
+        calculate_and_write_scores(
             args.input_csv_file,
             output_file,
             revenue_window_secs,
             reputation_multiplier,
-            args.interval_hours,
-            args.max_intervals
+            append_mode=False
         )
     elif args.interval is not None:
         # Periodic execution mode
@@ -340,13 +339,14 @@ def main():
         except KeyboardInterrupt:
             print("\nStopped by user")
     else:
-        # Single run mode (backward compatible)
-        calculate_and_write_scores(
+        # Historical interval analysis mode (default)
+        run_historical_analysis(
             args.input_csv_file,
             output_file,
             revenue_window_secs,
             reputation_multiplier,
-            append_mode=False
+            args.interval_hours,
+            args.max_intervals
         )
 
 
